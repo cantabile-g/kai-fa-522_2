@@ -1,0 +1,222 @@
+/* style.css — Snake3D 游戏样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0a0a1a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #ffffff;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* === 游戏容器 === */
+#game-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#game-container canvas {
+    display: block;
+}
+
+/* === HUD 顶部信息栏 === */
+#hud {
+    position: fixed;
+    top: 16px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.hud-item {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.hud-label {
+    color: #8899aa;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#score-display {
+    color: #ffd700;
+    font-size: 22px;
+}
+
+#speed-display {
+    color: #4caf50;
+    font-size: 22px;
+}
+
+/* === 遮罩层通用 === */
+.overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+/* === 开始界面 === */
+.overlay-title {
+    font-size: 48px;
+    font-weight: 700;
+    color: #4caf50;
+    margin-bottom: 8px;
+    text-shadow: 0 0 30px rgba(76, 175, 80, 0.4);
+    letter-spacing: 2px;
+}
+
+.overlay-subtitle {
+    font-size: 16px;
+    color: #8899aa;
+    margin-bottom: 32px;
+}
+
+.overlay-hint {
+    font-size: 13px;
+    color: #667788;
+    margin-top: 16px;
+}
+
+.overlay-controls {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.control-key {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #667788;
+}
+
+.control-key kbd {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 3px 8px;
+    color: #aabbcc;
+    font-size: 11px;
+    font-family: monospace;
+}
+
+.btn {
+    padding: 12px 36px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    letter-spacing: 1px;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn-primary {
+    background: #4caf50;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background: #45a049;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: #ffffff;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+/* === 游戏结束界面 === */
+.gameover-score {
+    font-size: 64px;
+    font-weight: 700;
+    color: #ffd700;
+    margin: 8px 0;
+}
+
+.gameover-label {
+    font-size: 24px;
+    color: #e74c3c;
+    margin-bottom: 4px;
+}
+
+.gameover-high {
+    font-size: 14px;
+    color: #8899aa;
+    margin-bottom: 24px;
+}
+
+.gameover-high span {
+    color: #ffd700;
+    font-weight: 600;
+}
+
+/* === 暂停界面 === */
+.pause-text {
+    font-size: 36px;
+    font-weight: 600;
+    color: #8899aa;
+    letter-spacing: 4px;
+}
+
+/* === 响应式 === */
+@media (max-width: 600px) {
+    .overlay-title {
+        font-size: 32px;
+    }
+    .btn {
+        padding: 10px 28px;
+        font-size: 14px;
+    }
+    .gameover-score {
+        font-size: 48px;
+    }
+    #hud {
+        gap: 16px;
+    }
+    .hud-item {
+        padding: 6px 14px;
+    }
+}

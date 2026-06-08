@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake3D — 3D贪吃蛇</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- 游戏画布容器 -->
+    <div id="game-container"></div>
+
+    <!-- 顶部 HUD -->
+    <div id="hud">
+        <div class="hud-item">
+            <div class="hud-label">Score</div>
+            <div id="score-display">0</div>
+        </div>
+        <div class="hud-item">
+            <div class="hud-label">Level</div>
+            <div id="speed-display">Lv.1</div>
+        </div>
+    </div>
+
+    <!-- 开始界面 -->
+    <div id="overlay-start" class="overlay">
+        <div class="overlay-title">SNAKE 3D</div>
+        <div class="overlay-subtitle">3D 贪吃蛇</div>
+        <div class="overlay-controls">
+            <div class="control-key"><kbd>W A S D</kbd> 或</div>
+            <div class="control-key"><kbd>↑ ← ↓ →</kbd> 移动</div>
+            <div class="control-key"><kbd>Space</kbd> 暂停</div>
+        </div>
+        <button id="btn-start" class="btn btn-primary">开始游戏</button>
+        <div class="overlay-hint">按 <kbd>空格键</kbd> 或点击按钮开始</div>
+    </div>
+
+    <!-- 游戏结束界面 -->
+    <div id="overlay-over" class="overlay" style="display:none;">
+        <div class="gameover-label">游戏结束</div>
+        <div class="gameover-score" id="final-score">0</div>
+        <div class="gameover-high">最高分：<span id="high-score">0</span></div>
+        <button id="btn-restart" class="btn btn-danger">再来一局</button>
+        <div class="overlay-hint">按 <kbd>空格键</kbd> 重新开始</div>
+    </div>
+
+    <!-- 暂停界面 -->
+    <div id="overlay-pause" class="overlay" style="display:none;">
+        <div class="pause-text">暂停</div>
+        <div class="overlay-hint">按 <kbd>空格键</kbd> 继续</div>
+    </div>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+    <!-- 游戏脚本（按依赖顺序加载） -->
+    <script src="/js/game-core.js"></script>
+    <script src="/js/scene.js"></script>
+    <script src="/js/main.js"></script>
+
+</body>
+</html>
