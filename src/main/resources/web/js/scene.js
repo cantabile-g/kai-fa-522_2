@@ -16,12 +16,16 @@ var Scene3D = (function () {
     var foodMesh = null;
     var gridGroup = null;
     var floorPlane = null;
+    var particles = [];
     var animationId = null;
 
     var GRID_SIZE = 18;
     var CENTER_OFFSET = (GRID_SIZE - 1) / 2;
     var SNAKE_Y = 0.25;
     var FOOD_Y = 0.4;
+    var HEAD_COLOR = 0xffd700;
+    var BODY_COLOR = 0x4caf50;
+    var FOOD_COLOR = 0xff4444;
 
     function init(container) {
         scene = new THREE.Scene();
@@ -57,7 +61,6 @@ var Scene3D = (function () {
 
         createFloor();
         createGrid();
-
         window.addEventListener('resize', onResize);
     }
 
@@ -104,19 +107,154 @@ var Scene3D = (function () {
         scene.add(gridGroup);
     }
 
+    function gameToWorld(gx, gz, y) {
+        return new THREE.Vector3(gx - CENTER_OFFSET, y || 0, gz - CENTER_OFFSET);
+    }
+
+    function createSnakeSegment(isHead, colorOverride) {
+        var size = 0.85;
+        var geometry = new THREE.BoxGeometry(size, size * 0.7, size);
+        var color = colorOverride || (isHead ? HEAD_COLOR : BODY_COLOR);
+        var material = new THREE.MeshStandardMaterial({
+            color: color,
+            roughness: 0.3,
+            metalness: 0.4,
+            emissive: isHead ? color : 0x000000,
+            emissiveIntensity: isHead ? 0.6 : 0
+        });
+        var mesh = new THREE.Mesh(geometry, material);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        return mesh;
+    }
+
+    function createFoodMesh() {
+        var geometry = new THREE.OctahedronGeometry(0.35, 0);
+        var material = new THREE.MeshStandardMaterial({
+            color: FOOD_COLOR,
+            roughness: 0.2,
+            metalness: 0.5,
+            emissive: FOOD_COLOR,
+            emissiveIntensity: 0.8
+        });
+        var mesh = new THREE.Mesh(geometry, material);
+        mesh.castShadow = true;
+        mesh.position.y = FOOD_Y;
+        return mesh;
+    }
+
+    function spawnParticles(worldPos) {
+        var count = 12;
+        var particleGroup = new THREE.Group();
+        for (var i = 0; i < count; i++) {
+            var size = 0.05 + Math.random() * 0.1;
+            var geometry = new THREE.SphereGeometry(size, 4, 4);
+            var hue = Math.random();
+            var color = new THREE.Color().setHSL(hue, 0.8, 0.6);
+            var material = new THREE.MeshBasicMaterial({ color: color });
+            var particle = new THREE.Mesh(geometry, material);
+            particle.position.copy(worldPos);
+            particle.userData = {
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 3,
+                    Math.random() * 3 + 1,
+                    (Math.random() - 0.5) * 3
+                ),
+                life: 1.0
+            };
+            particleGroup.add(particle);
+        }
+        scene.add(particleGroup);
+        particles.push({ group: particleGroup, age: 0, maxAge: 0.5 });
+    }
+
+    function update(gameState) {
+        if (!gameState || !gameState.snake) return;
+        updateSnake(gameState.snake);
+        updateFood(gameState.food);
+        updateParticles();
+    }
+
+    function updateSnake(snakeData) {
+        snakeMeshes.forEach(function(m) { scene.remove(m); });
+        snakeMeshes = [];
+        var len = snakeData.length;
+        snakeData.forEach(function(seg, i) {
+            var mesh;
+            if (i === 0) {
+                mesh = createSnakeSegment(true);
+                if (i < len - 1) {
+                    var next = snakeData[i + 1];
+                    var dx = seg.x - next.x;
+                    var dz = seg.z - next.z;
+                    if (dx !== 0) mesh.rotation.y = dx > 0 ? 0 : Math.PI;
+                    else if (dz !== 0) mesh.rotation.y = dz > 0 ? -Math.PI / 2 : Math.PI / 2;
+                }
+            } else {
+                var t = i / (len - 1);
+                var r = 0x4c + Math.floor(t * 0x2e);
+                var g = 0xaf - Math.floor(t * 0x40);
+                var b = 0x50 - Math.floor(t * 0x20);
+                mesh = createSnakeSegment(false, (r << 16) | (g << 8) | b);
+            }
+            mesh.position.copy(gameToWorld(seg.x, seg.z, SNAKE_Y));
+            scene.add(mesh);
+            snakeMeshes.push(mesh);
+        });
+    }
+
+    function updateFood(foodData) {
+        if (foodMesh) { scene.remove(foodMesh); foodMesh = null; }
+        if (foodData) {
+            foodMesh = createFoodMesh();
+            foodMesh.position.copy(gameToWorld(foodData.x, foodData.z, FOOD_Y));
+            scene.add(foodMesh);
+        }
+    }
+
+    function updateParticles() {
+        var dt = 0.016;
+        var toRemove = [];
+        particles.forEach(function(p, index) {
+            p.age += dt;
+            if (p.age >= p.maxAge) {
+                scene.remove(p.group);
+                toRemove.push(index);
+                return;
+            }
+            var progress = p.age / p.maxAge;
+            p.group.children.forEach(function(particle) {
+                particle.position.x += particle.userData.velocity.x * dt;
+                particle.position.y += particle.userData.velocity.y * dt;
+                particle.position.z += particle.userData.velocity.z * dt;
+                particle.userData.velocity.y -= 6 * dt;
+                particle.material.opacity = 1 - progress;
+                particle.material.transparent = true;
+                particle.scale.setScalar(1 - progress * 0.5);
+            });
+        });
+        toRemove.reverse().forEach(function(i) { particles.splice(i, 1); });
+    }
+
+    function emitFoodParticles(foodPos) {
+        if (foodPos) spawnParticles(gameToWorld(foodPos.x, foodPos.z, FOOD_Y));
+    }
+
     function startRenderLoop() {
         function animate() {
             animationId = requestAnimationFrame(animate);
+            if (foodMesh) {
+                foodMesh.rotation.y += 0.02;
+                foodMesh.rotation.x += 0.01;
+                foodMesh.position.y = FOOD_Y + Math.sin(Date.now() * 0.003) * 0.1;
+            }
             renderer.render(scene, camera);
         }
         animate();
     }
 
     function stopRenderLoop() {
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-            animationId = null;
-        }
+        if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
     }
 
     function onResize() {
@@ -140,10 +278,10 @@ var Scene3D = (function () {
 
     return {
         init: init,
-        update: function() {},
+        update: update,
         startRenderLoop: startRenderLoop,
         stopRenderLoop: stopRenderLoop,
-        emitFoodParticles: function() {},
+        emitFoodParticles: emitFoodParticles,
         dispose: dispose
     };
 })();
