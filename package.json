@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node -e \"console.log('Tests passed: game-core.js syntax OK')\""
+    "test": "node test-game.js"
   },
   "keywords": ["threejs", "snake", "game", "3d"],
   "license": "MIT"
