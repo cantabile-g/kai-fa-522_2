@@ -235,6 +235,16 @@ html, body {
     background: #c0392b;
 }
 
+.btn-menu {
+    background: rgba(255,255,255,0.15);
+    color: #ccddee;
+    margin-top: 8px;
+}
+
+.btn-menu:hover {
+    background: rgba(255,255,255,0.25);
+}
+
 /* === 游戏结束界面 === */
 .gameover-score {
     font-size: 64px;

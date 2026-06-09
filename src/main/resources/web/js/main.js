@@ -20,6 +20,7 @@
     var btnStart = document.getElementById('btn-start');
     var btnStart2P = document.getElementById('btn-start-2p');
     var btnRestart = document.getElementById('btn-restart');
+    var btnMenu = document.getElementById('btn-menu');
     var selGridSize = document.getElementById('sel-grid-size');
     var selTheme = document.getElementById('sel-theme');
     var selDifficulty = document.getElementById('sel-difficulty');
@@ -225,6 +226,10 @@
     btnStart.addEventListener('click', function() { startGame('single'); });
     btnStart2P.addEventListener('click', function() { startGame('twoPlayer'); });
     btnRestart.addEventListener('click', restartGame);
+    btnMenu.addEventListener('click', function() {
+        stopGameLoop();
+        showOverlay(overlayStart);
+    });
 
     var touchStartX = 0, touchStartY = 0;
     gameContainer.addEventListener('touchstart', function (e) {
