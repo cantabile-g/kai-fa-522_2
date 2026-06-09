@@ -83,16 +83,17 @@ kai-fa-522_2/
 | 角色 | GitHub | 负责模块 | 分支 |
 |------|--------|---------|------|
 | 组长/成员A | jettychen / jet-isnt-haha | 项目初始化 + 游戏核心逻辑 + 服务器 + UI + 集成合并 | master / feature/game-logic / feature/server-ui |
-| 成员B | cantabile-g | Three.js 3D 场景搭建与渲染 | feature/3d-render |
+| 成员B | cantabile-g | 3D 场景 + 多主题渲染 + 障碍物/道具 | feature/3d-render / feature/map-items |
 | 成员C | funnyjacy | 单元测试 + 双人模式引擎 | feature/game-test / feature/multiplayer |
 
 ### 分支模型
 - `master` — 稳定分支，只接受 PR 合并
-- `feature/game-logic` — 成员A：游戏逻辑
-- `feature/3d-render` — 成员B：3D 渲染
+- `feature/game-logic` — 成员A：游戏逻辑 + 地图道具引擎
+- `feature/3d-render` — 成员B：3D 渲染 + 主题 + 障碍/道具
 - `feature/server-ui` — 成员A：服务器 + UI
 - `feature/game-test` — 成员C：单元测试
 - `feature/multiplayer` — 三人协作：双人对战模式
+- `feature/map-items` — 两人协作：地图/主题/道具/障碍
 
 ### Commit 规范
 - 格式：`[模块] 简洁描述`
@@ -105,23 +106,27 @@ kai-fa-522_2/
 ## 六、游戏功能规格
 
 ### 基本参数
-- 网格大小：18x18
+- 网格大小：可选 12x12 / 18x18 / 24x24（默认 18x18）
 - 初始蛇长：3 节
-- 初始方向：RIGHT（向右）
+- 初始方向：单人 RIGHT / 双人平行 UP
 - 速度：180ms/步，每吃5个食物减10ms，最低60ms
-- 每食物加分：10分
+- 每食物加分：10分（双倍道具生效时 20分）
 
 ### 功能清单（不可删减）
 1. 蛇的移动控制（WASD / 方向键）
 2. 蛇吃食物后增长
-3. 撞墙/撞自己 → 游戏结束
-4. 食物随机生成（不在蛇身上）
+3. 撞墙/撞自己/撞障碍物 → 游戏结束（护盾可抵消一次）
+4. 食物随机生成（不在蛇身/障碍物/道具上）
 5. 分数实时显示（HUD）
 6. 开始界面 + 游戏结束界面
 7. 暂停/继续（空格键）
 8. 重新开始
 9. 3D 渲染（蛇身、食物、网格、粒子特效）
 10. 单机双人对战模式（P1=WASD 绿蛇, P2=方向键 蓝蛇, 对抗淘汰制）
+11. 地图大小选择（小12/中18/大24，障碍物6/10/16个）
+12. 场景主题切换（暗黑/草地/沙漠/冰原，4套配色方案）
+13. 道具系统（闪电加速/龟壳减速/护盾/双倍得分，每15步生成）
+14. 随机障碍物方块（出生点3格安全区）
 
 ---
 
