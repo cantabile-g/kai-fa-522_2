@@ -77,7 +77,12 @@ npm start
 | 护盾 🛡 | 紫色光环 | 抵消一次死亡 |
 | 双倍 ✨ | 黄色光环 | 吃食物双倍得分 |
 
-道具每 15 步自动生成，场上最多同时存在 2 个。
+道具每 15 步自动生成，场上最多同时存在 2 个。拾取道具时屏幕中央弹出对应颜色提示。
+
+### 性能优化
+- RAF 驱动游戏循环（60fps 稳定渲染）
+- 按键即时响应（转向延迟 < 16ms）
+- 像素比限制 + 阴影贴图减半（移动端流畅）
 
 ### 障碍物
 
@@ -125,9 +130,9 @@ kai-fa-522_2/
 
 | 成员 | GitHub | 负责模块 | 分支 |
 |------|--------|---------|------|
-| 陈健韬 | jettychen / jet-isnt-haha | 组长——项目初始化、游戏核心逻辑、HTTP服务器、UI界面、CI/CD、集成合并 | master / feature/game-logic / feature/server-ui |
-| 高有民 | cantabile-g | 3D 场景渲染、多主题场景、障碍物/道具渲染、粒子特效 | feature/3d-render / feature/map-items |
-| 赵昊德 | funnyjacy | 游戏引擎单元测试、双人模式引擎、测试适配 | feature/game-test / feature/multiplayer |
+| 陈健韬 | jettychen / jet-isnt-haha | 组长——游戏核心逻辑、服务器+UI、CI/CD、集成合并 | master / game-logic / server-ui / optimization |
+| 高有民 | cantabile-g | 3D 场景渲染、多主题+障碍物/道具渲染、视觉打磨 | 3d-render / map-items / polish |
+| 赵昊德 | funnyjacy | 单元测试、双人引擎、道具提示、输入优化 | game-test / multiplayer / polish |
 
 ---
 
