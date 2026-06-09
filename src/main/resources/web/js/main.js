@@ -46,6 +46,8 @@
         GameEngine.on('onUpdate', function (state) {
             Scene3D.update(state);
             gameSpeed = state.speed;
+            var s1 = document.getElementById('shield1-badge');
+            if (s1 && state) s1.style.display = state.shield1 ? 'inline' : 'none';
         });
 
         GameEngine.on('onScoreChange', function (data) {
