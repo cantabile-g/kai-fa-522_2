@@ -157,18 +157,29 @@ var GameEngine = (function () {
 
     function restart() { init(); start(); }
 
-    function setDirection(dir) { setDirectionFor(dir, 1); }
-    function setDirectionP2(dir) { setDirectionFor(dir, 2); }
+    function setDirection(dir) { return setDirectionFor(dir, 1); }
+    function setDirectionP2(dir) { return setDirectionFor(dir, 2); }
 
     function setDirectionFor(dir, player) {
-        if (state !== STATE.PLAYING) return;
-        if (!dir || (dir.x === 0 && dir.z === 0)) return;
-        if (player === 1 && !alive1) return;
-        if (player === 2 && !alive2) return;
+        if (state !== STATE.PLAYING) return false;
+        if (!dir || (dir.x === 0 && dir.z === 0)) return false;
+        if (player === 1 && !alive1) return false;
+        if (player === 2 && !alive2) return false;
         var curDir = player === 1 ? direction1 : direction2;
-        if (curDir && dir.x === -curDir.x && dir.z === -curDir.z) return;
+        if (curDir && dir.x === -curDir.x && dir.z === -curDir.z) return false;
         if (player === 1) nextDirection1 = dir;
         else nextDirection2 = dir;
+        return true;
+    }
+
+    // 道具描述映射
+    function getItemDesc(type) {
+        var map = {};
+        map[ITEM_TYPE.SPEED] = '闪电: 加速!';
+        map[ITEM_TYPE.SLOW] = '龟壳: 减速!';
+        map[ITEM_TYPE.SHIELD] = '护盾: 抵消一次死亡';
+        map[ITEM_TYPE.DOUBLE] = '双倍: 得分×2';
+        return map[type] || type;
     }
 
     function tick() {
@@ -407,6 +418,7 @@ var GameEngine = (function () {
         getFood: getFood, getScore: getScore, getScore2: getScore2,
         getSpeed: getSpeed, getState: getState,
         getItems: getItems, getObstacles: getObstacles,
+        getItemDesc: getItemDesc,
         hasShield1: hasShield1, hasShield2: hasShield2,
         isAlive1: isAlive1, isAlive2: isAlive2,
         on: on, STATE: STATE, MODE: MODE, THEME: THEME, DIFFICULTY: DIFFICULTY, ITEM_TYPE: ITEM_TYPE, DIR: DIR
