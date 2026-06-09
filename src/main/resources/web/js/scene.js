@@ -16,6 +16,7 @@ var Scene3D = (function () {
     var animationId = null;
     var currentTheme = 'dark';
     var currentGridSize = 18;
+    var sceneryGroup = null;  // 场景装饰物组
     var CENTER_OFFSET = 8.5;
     var SNAKE_Y = 0.25, FOOD_Y = 0.4;
 
@@ -41,7 +42,7 @@ var Scene3D = (function () {
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.shadowMap.enabled = true;
         container.appendChild(renderer.domElement);
 
@@ -52,8 +53,8 @@ var Scene3D = (function () {
         var dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
         dirLight.position.set(10, 20, 5);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 1024;
-        dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.mapSize.width = 512;
+        dirLight.shadow.mapSize.height = 512;
         dirLight.shadow.camera.near = 0.5;
         dirLight.shadow.camera.far = 60;
         dirLight.shadow.camera.left = -15;
@@ -133,6 +134,72 @@ var Scene3D = (function () {
                 ]), lineMaterial));
         }
         scene.add(gridGroup);
+        createScenery(size);
+    }
+
+    function createScenery(size) {
+        if (sceneryGroup) scene.remove(sceneryGroup);
+        sceneryGroup = new THREE.Group();
+        var half = size / 2;
+        var tName = currentTheme;
+
+        if (tName === 'green') {
+            // 草地：散布小草丛
+            for (var i = 0; i < Math.floor(size * 1.5); i++) {
+                var g = new THREE.ConeGeometry(0.12, 0.3, 4);
+                var m = new THREE.MeshStandardMaterial({ color: 0x2d5a1e, roughness: 0.8 });
+                var tuft = new THREE.Mesh(g, m);
+                tuft.position.set(
+                    (Math.random() - 0.5) * size, 0.15,
+                    (Math.random() - 0.5) * size
+                );
+                tuft.receiveShadow = true;
+                sceneryGroup.add(tuft);
+            }
+        } else if (tName === 'desert') {
+            // 沙漠：随机沙丘
+            for (var i = 0; i < Math.floor(size * 0.8); i++) {
+                var g = new THREE.SphereGeometry(0.2 + Math.random() * 0.3, 4, 3, 0, Math.PI * 2, 0, Math.PI / 2);
+                var m = new THREE.MeshStandardMaterial({ color: 0x8B7355, roughness: 1.0 });
+                var dune = new THREE.Mesh(g, m);
+                dune.position.set(
+                    (Math.random() - 0.5) * size * 0.9, 0,
+                    (Math.random() - 0.5) * size * 0.9
+                );
+                dune.receiveShadow = true;
+                sceneryGroup.add(dune);
+            }
+        } else if (tName === 'ice') {
+            // 冰原：冰晶柱
+            for (var i = 0; i < Math.floor(size * 0.6); i++) {
+                var g = new THREE.CylinderGeometry(0.05, 0.15, 0.5 + Math.random() * 0.5, 5);
+                var m = new THREE.MeshStandardMaterial({
+                    color: 0x88ccff, roughness: 0.1, metalness: 0.3,
+                    emissive: 0x112244, emissiveIntensity: 0.3,
+                    transparent: true, opacity: 0.7
+                });
+                var crystal = new THREE.Mesh(g, m);
+                crystal.position.set(
+                    (Math.random() - 0.5) * size * 0.9, 0.2,
+                    (Math.random() - 0.5) * size * 0.9
+                );
+                sceneryGroup.add(crystal);
+            }
+        } else {
+            // 暗黑：四角发光柱
+            var glowGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 8);
+            var glowMat = new THREE.MeshStandardMaterial({
+                color: 0x334466, roughness: 0.1, metalness: 0.8,
+                emissive: 0x112244, emissiveIntensity: 0.8
+            });
+            var corners = [[-half+0.5, -half+0.5], [half-0.5, -half+0.5], [-half+0.5, half-0.5], [half-0.5, half-0.5]];
+            corners.forEach(function(c) {
+                var pillar = new THREE.Mesh(glowGeo, glowMat);
+                pillar.position.set(c[0], 0.75, c[1]);
+                sceneryGroup.add(pillar);
+            });
+        }
+        scene.add(sceneryGroup);
     }
 
     function gameToWorld(gx, gz, y) {
