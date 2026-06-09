@@ -11,7 +11,7 @@ var Scene3D = (function () {
     var snakeMeshes1 = [], snakeMeshes2 = [];
     var foodMesh = null;
     var gridGroup = null, floorPlane = null;
-    var obstacleMeshes = [], itemMeshes = [];
+    var obstacleMeshes = [], itemMeshes = [], portalMeshes = [];
     var particles = [];
     var animationId = null;
     var currentTheme = 'dark';
@@ -300,19 +300,20 @@ var Scene3D = (function () {
         if (gameState.gridSize && gameState.gridSize !== currentGridSize) setGridSize(gameState.gridSize);
         if (gameState.theme && gameState.theme !== currentTheme) applyTheme(gameState.theme);
 
-        updateSnake(gameState.snake || [], snakeMeshes1, HEAD_COLOR_1, BODY_COLOR_1);
+        updateSnake(gameState.snake || [], snakeMeshes1, HEAD_COLOR_1, BODY_COLOR_1, gameState.isGhost1);
         if (gameState.mode === 'twoPlayer') {
-            updateSnake(gameState.snake2 || [], snakeMeshes2, HEAD_COLOR_2, BODY_COLOR_2);
+            updateSnake(gameState.snake2 || [], snakeMeshes2, HEAD_COLOR_2, BODY_COLOR_2, gameState.isGhost2);
         } else {
             updateSnake([], snakeMeshes2, HEAD_COLOR_2, BODY_COLOR_2);
         }
         updateFood(gameState.food);
         updateObstacles(gameState.obstacles || []);
         updateItems(gameState.items || []);
+        updatePortals(gameState);
         updateParticles();
     }
 
-    function updateSnake(snakeData, meshArray, headColor, bodyColor) {
+    function updateSnake(snakeData, meshArray, headColor, bodyColor, isGhost) {
         meshArray.forEach(function(m) { scene.remove(m); });
         meshArray.length = 0;
         if (!snakeData || snakeData.length === 0) return;
@@ -333,6 +334,12 @@ var Scene3D = (function () {
                 var df = 0.6 + 0.4*(1-t);
                 var r = Math.floor(bc.r*255*df), g = Math.floor(bc.g*255*df), b = Math.floor(bc.b*255*df);
                 mesh = createSnakeSegment(false, headColor, (r<<16)|(g<<8)|b);
+            }
+            if (isGhost) {
+                mesh.material.transparent = true;
+                mesh.material.opacity = 0.35;
+                mesh.material.emissive = new THREE.Color(0xffffff);
+                mesh.material.emissiveIntensity = 0.5;
             }
             mesh.position.copy(gameToWorld(seg.x, seg.z, SNAKE_Y));
             scene.add(mesh);
@@ -356,6 +363,26 @@ var Scene3D = (function () {
             var mesh = createObstacleMesh(gameToWorld(o.x, o.z, 0));
             scene.add(mesh);
             obstacleMeshes.push(mesh);
+        });
+    }
+
+    function updatePortals(gameState) {
+        portalMeshes.forEach(function(m) { scene.remove(m); });
+        portalMeshes = [];
+        var portals = [];
+        if (gameState.portals) portals = gameState.portals;
+        else if (GameEngine && GameEngine.getPortals) portals = GameEngine.getPortals();
+        portals.forEach(function(p) {
+            var g = new THREE.TorusGeometry(0.4, 0.08, 8, 16);
+            var m = new THREE.MeshStandardMaterial({
+                color: 0x00ffff, roughness: 0.1, metalness: 0.5,
+                emissive: 0x0088ff, emissiveIntensity: 1.0
+            });
+            var mesh = new THREE.Mesh(g, m);
+            mesh.position.copy(gameToWorld(p.x, p.z, 0.3));
+            mesh.userData = { type: 'portal' };
+            scene.add(mesh);
+            portalMeshes.push(mesh);
         });
     }
 
@@ -410,6 +437,10 @@ var Scene3D = (function () {
                     s.material.opacity = 0.3 + 0.4 * Math.abs(Math.sin(Date.now()*0.002 + s.position.z));
                 });
             }
+            portalMeshes.forEach(function(m) {
+                m.rotation.z += 0.04; m.rotation.x += 0.03;
+                m.position.y = 0.3 + Math.sin(Date.now()*0.005 + m.position.x)*0.2;
+            });
             renderer.render(scene, camera);
         }
         animate();
