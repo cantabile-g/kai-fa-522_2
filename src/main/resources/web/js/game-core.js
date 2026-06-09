@@ -19,7 +19,7 @@ var GameEngine = (function () {
     var MODE = { SINGLE: 'single', TWO_PLAYER: 'twoPlayer' };
     var THEME = { DARK: 'dark', GREEN: 'green', DESERT: 'desert', ICE: 'ice' };
     var DIFFICULTY = { EASY: 'easy', NORMAL: 'normal', HARD: 'hard' };
-    var ITEM_TYPE = { SPEED: 'speed', SLOW: 'slow', SHIELD: 'shield', DOUBLE: 'double' };
+    var ITEM_TYPE = { SPEED: 'speed', SLOW: 'slow', SHIELD: 'shield', DOUBLE: 'double', GHOST: 'ghost' };
 
     var DIR = {
         UP:    { x:  0, z: -1 },
@@ -48,6 +48,20 @@ var GameEngine = (function () {
     var itemTimer = 0;    // tick counter for item spawning
     var ITEM_SPAWN_INTERVAL = 10; // 道具生成间隔（平衡食物频率）
     var ITEM_MAX = 1;
+
+    // 连击系统
+    var combo = 0;
+    var lastEatTime = 0;
+    var COMBO_TIMEOUT = 2500;
+
+    // 幽灵模式
+    var ghostMode1 = false, ghostTimer1 = 0;
+    var ghostMode2 = false, ghostTimer2 = 0;
+    var GHOST_DURATION = 30; // 幽灵持续30步
+
+    // 传送门
+    var portalA = null, portalB = null;
+    var portalCooldown = 0; // 传送后冷却3步
 
     // 障碍物
     var obstacles = [];   // [{x, z}]
@@ -129,6 +143,7 @@ var GameEngine = (function () {
         }
 
         score1 = 0; alive1 = true; shield1 = false; doubleScore1 = false;
+        combo = 0; lastEatTime = 0;
         score2 = 0; alive2 = true; shield2 = false; doubleScore2 = false;
         winner = null;
         // 难度影响速度: EASY=220, NORMAL=180, HARD=140
@@ -179,6 +194,7 @@ var GameEngine = (function () {
         map[ITEM_TYPE.SLOW] = '龟壳: 减速!';
         map[ITEM_TYPE.SHIELD] = '护盾: 抵消一次死亡';
         map[ITEM_TYPE.DOUBLE] = '双倍: 得分×2';
+        map[ITEM_TYPE.GHOST] = '幽灵: 穿透!';
         return map[type] || type;
     }
 
@@ -261,8 +277,17 @@ var GameEngine = (function () {
             var pts = SCORE_PER_FOOD;
             if (playerNum === 1 && doubleScore1) pts *= 2;
             if (playerNum === 2 && doubleScore2) pts *= 2;
-            if (playerNum === 1) { score1 += pts; fire('onScoreChange', { player: 1, score: score1 }); }
-            else { score2 += pts; fire('onScoreChange', { player: 2, score: score2 }); }
+            // 连击倍率
+            var now = Date.now();
+            if (now - lastEatTime < COMBO_TIMEOUT) {
+                combo++;
+            } else {
+                combo = 0;
+            }
+            lastEatTime = now;
+            if (combo >= 1) pts = Math.floor(pts * (1 + combo * 0.5));
+            if (playerNum === 1) { score1 += pts; fire('onScoreChange', { player: 1, score: score1, combo: combo }); }
+            else { score2 += pts; fire('onScoreChange', { player: 2, score: score2, combo: combo }); }
             fire('onEatFood', food);
             var totalFood = Math.floor((score1 + score2) / SCORE_PER_FOOD);
             if (totalFood > 0 && totalFood % FOOD_PER_SPEEDUP === 0) {
@@ -431,6 +456,7 @@ var GameEngine = (function () {
         getSpeed: getSpeed, getState: getState,
         getItems: getItems, getObstacles: getObstacles,
         getItemDesc: getItemDesc,
+        getCombo: function() { return combo; },
         hasShield1: hasShield1, hasShield2: hasShield2,
         isAlive1: isAlive1, isAlive2: isAlive2,
         on: on, STATE: STATE, MODE: MODE, THEME: THEME, DIFFICULTY: DIFFICULTY, ITEM_TYPE: ITEM_TYPE, DIR: DIR
