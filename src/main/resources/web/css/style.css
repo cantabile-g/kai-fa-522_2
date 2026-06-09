@@ -69,6 +69,18 @@ html, body {
     font-size: 22px;
 }
 
+/* 护盾指示器 */
+.shield-badge {
+    font-size: 12px;
+    margin-left: 4px;
+    animation: shieldPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes shieldPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
 /* === 遮罩层通用 === */
 .overlay {
     position: fixed;
