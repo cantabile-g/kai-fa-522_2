@@ -152,6 +152,7 @@ var GameEngine = (function () {
         items = []; itemTimer = 0;
         obstacles = [];
         placeObstacles();
+        placePortals();
         placeFood();
         fire('onUpdate', getPublicState());
         fire('onStateChange', state);
@@ -229,11 +230,17 @@ var GameEngine = (function () {
             itemTimer = 0;
         }
 
+        if (ghostMode1) { ghostTimer1--; if (ghostTimer1 <= 0) ghostMode1 = false; }
+        if (ghostMode2) { ghostTimer2--; if (ghostTimer2 <= 0) ghostMode2 = false; }
+        if (portalCooldown > 0) portalCooldown--;
+
         fire('onUpdate', getPublicState());
         return state !== STATE.OVER;
     }
 
     function moveSnakeWithHead(playerNum, snakeArr, newHead) {
+        var isGhost = (playerNum === 1 && ghostMode1) || (playerNum === 2 && ghostMode2);
+        if (!isGhost) {
         // 撞墙
         if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.z < 0 || newHead.z >= GRID_SIZE) {
             if (playerNum === 1 && shield1) { useShield(playerNum); return; }
@@ -267,6 +274,15 @@ var GameEngine = (function () {
                     if (playerNum === 2 && shield2) { useShield(playerNum); return; }
                     killPlayer(playerNum); return;
                 }
+            }
+        }
+        }
+
+        if (portalA && portalB && portalCooldown <= 0) {
+            if (newHead.x === portalA.x && newHead.z === portalA.z) {
+                newHead = { x: portalB.x, z: portalB.z }; portalCooldown = 3;
+            } else if (newHead.x === portalB.x && newHead.z === portalB.z) {
+                newHead = { x: portalA.x, z: portalA.z }; portalCooldown = 3;
             }
         }
 
@@ -325,6 +341,10 @@ var GameEngine = (function () {
             case ITEM_TYPE.DOUBLE:
                 if (playerNum === 1) doubleScore1 = true;
                 else doubleScore2 = true;
+                break;
+            case ITEM_TYPE.GHOST:
+                if (playerNum === 1) { ghostMode1 = true; ghostTimer1 = GHOST_DURATION; }
+                else { ghostMode2 = true; ghostTimer2 = GHOST_DURATION; }
                 break;
         }
     }
@@ -398,6 +418,28 @@ var GameEngine = (function () {
         }
     }
 
+    function placePortals() {
+        portalA = null; portalB = null; portalCooldown = 0;
+        var occ = {};
+        snake1.forEach(function(s) { occ[s.x+","+s.z] = true; });
+        snake2.forEach(function(s) { occ[s.x+","+s.z] = true; });
+        obstacles.forEach(function(o) { occ[o.x+","+o.z] = true; });
+        var m = Math.floor(GRID_SIZE / 5);
+        for (var t = 0; t < 100; t++) {
+            var ax = m + Math.floor(Math.random() * (GRID_SIZE - m*2));
+            var az = m + Math.floor(Math.random() * (GRID_SIZE - m*2));
+            var bx = m + Math.floor(Math.random() * (GRID_SIZE - m*2));
+            var bz = m + Math.floor(Math.random() * (GRID_SIZE - m*2));
+            if (!occ[ax+","+az] && !occ[bx+","+bz] && (ax!==bx||az!==bz)) {
+                portalA = { x: ax, z: az }; portalB = { x: bx, z: bz }; return;
+            }
+        }
+    }
+
+    function getPortals() { return portalA && portalB ? [portalA, portalB] : []; }
+    function isGhost1() { return ghostMode1; }
+    function isGhost2() { return ghostMode2; }
+
     function placeItem() {
         var occupied = {};
         snake1.forEach(function(s) { occupied[s.x + ',' + s.z] = true; });
@@ -406,7 +448,7 @@ var GameEngine = (function () {
         if (food) occupied[food.x + ',' + food.z] = true;
         items.forEach(function(i) { occupied[i.x + ',' + i.z] = true; });
 
-        var types = [ITEM_TYPE.SPEED, ITEM_TYPE.SLOW, ITEM_TYPE.SHIELD, ITEM_TYPE.DOUBLE];
+        var types = [ITEM_TYPE.SPEED, ITEM_TYPE.SLOW, ITEM_TYPE.SHIELD, ITEM_TYPE.DOUBLE, ITEM_TYPE.GHOST];
         for (var tries = 0; tries < 100; tries++) {
             var x = Math.floor(Math.random() * GRID_SIZE);
             var z = Math.floor(Math.random() * GRID_SIZE);
@@ -456,6 +498,7 @@ var GameEngine = (function () {
         getSpeed: getSpeed, getState: getState,
         getItems: getItems, getObstacles: getObstacles,
         getItemDesc: getItemDesc,
+        getPortals: getPortals, isGhost1: isGhost1, isGhost2: isGhost2,
         getCombo: function() { return combo; },
         hasShield1: hasShield1, hasShield2: hasShield2,
         isAlive1: isAlive1, isAlive2: isAlive2,
