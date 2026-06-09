@@ -19,6 +19,9 @@ const wrappedCode = gameCode.replace('var GameEngine = (function', 'GameEngine =
 vm.runInContext(wrappedCode, sandbox);
 global.GameEngine = sandbox.GameEngine;
 
+// 设置为单人模式（兼容新版 multiplayer API）
+GameEngine.setMode(GameEngine.MODE.SINGLE);
+
 var passed = 0;
 var failed = 0;
 
@@ -77,7 +80,7 @@ assert(head.z === 11, '反向操作被阻止，继续向下');
 GameEngine.setDirection(GameEngine.DIR.LEFT);
 GameEngine.tick();
 head = GameEngine.getSnake()[0];
-assert(head.x === 8, '左转正常');
+assert(head.x === 7, '左转正常（蛇起始位置 center-1=8）');
 
 // ============================================================
 // 测试 4: 撞墙检测
@@ -86,18 +89,20 @@ console.log('\n=== Test 4: 撞墙检测 ===');
 GameEngine.restart();
 GameEngine.start();
 
-// 蛇头在 (9,9)，方向向右，网格 0..17
-for (var i = 0; i < 9; i++) {
+// 蛇头在 (8,9)，方向向右，网格 0..17，需要 10 步撞墙
+for (var i = 0; i < 10; i++) {
     var alive = GameEngine.tick();
     if (!alive) break;
 }
 assert(GameEngine.getState() === GameEngine.STATE.OVER, '撞右墙后状态为 OVER');
 
-// 撞左墙
+// 撞左墙：先转 UP 再转 LEFT（不能从 RIGHT 直接反向）
 GameEngine.restart();
 GameEngine.start();
+GameEngine.setDirection(GameEngine.DIR.UP);
+GameEngine.tick();
 GameEngine.setDirection(GameEngine.DIR.LEFT);
-for (var i = 0; i < 10; i++) {
+for (var i = 0; i < 9; i++) {
     var alive = GameEngine.tick();
     if (!alive) break;
 }
@@ -127,7 +132,7 @@ assert(GameEngine.getState() === GameEngine.STATE.PAUSED, '暂停后为 PAUSED')
 // 暂停时 tick 不应改变状态
 GameEngine.tick();
 var headPaused = GameEngine.getSnake()[0];
-assert(headPaused.x === 9 && headPaused.z === 9, '暂停时蛇不移动');
+assert(headPaused.x === 8 && headPaused.z === 9, '暂停时蛇不移动（起始位置 8,9）');
 
 GameEngine.togglePause();
 assert(GameEngine.getState() === GameEngine.STATE.PLAYING, '恢复后为 PLAYING');

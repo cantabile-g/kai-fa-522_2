@@ -250,6 +250,10 @@ var GameEngine = (function () {
             snake2 = [];
         }
         fire('onSnakeDie', playerNum);
+        // 单人模式：立即结束游戏
+        if (mode === MODE.SINGLE) {
+            endGame();
+        }
     }
 
     function placeFood() {
