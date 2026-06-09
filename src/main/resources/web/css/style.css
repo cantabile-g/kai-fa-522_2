@@ -129,6 +129,40 @@ html, body {
     background: #1976D2;
 }
 
+/* 地图/场景设置 */
+.map-settings {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.setting-row label {
+    color: #8899aa;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.setting-row select {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    color: #ccddee;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+}
+
+.setting-row select:focus {
+    border-color: #4caf50;
+}
+
 /* P2 HUD 颜色 */
 #hud-p2 .hud-label {
     color: #64B5F6;

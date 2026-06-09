@@ -21,6 +21,8 @@
     var btnStart = document.getElementById('btn-start');
     var btnStart2P = document.getElementById('btn-start-2p');
     var btnRestart = document.getElementById('btn-restart');
+    var selGridSize = document.getElementById('sel-grid-size');
+    var selTheme = document.getElementById('sel-theme');
 
     var gameTimer = null;
     var highScore = 0;
@@ -50,6 +52,11 @@
 
         GameEngine.on('onEatFood', function (pos) {
             Scene3D.emitFoodParticles(pos);
+        });
+
+        GameEngine.on('onEatItem', function (data) {
+            // 道具粒子
+            if (data && data.pos) Scene3D.emitFoodParticles(data.pos);
         });
 
         GameEngine.on('onSnakeDie', function (playerNum) {
@@ -89,6 +96,10 @@
 
     function startGame(mode) {
         isTwoPlayer = (mode === 'twoPlayer');
+        // 应用地图设置
+        var gs = parseInt(selGridSize.value, 10) || 18;
+        GameEngine.setGridSize(gs);
+        GameEngine.setTheme(selTheme.value || 'dark');
         GameEngine.setMode(isTwoPlayer ? GameEngine.MODE.TWO_PLAYER : GameEngine.MODE.SINGLE);
         GameEngine.start();
         scoreDisplay.textContent = '0';
