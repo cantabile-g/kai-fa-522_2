@@ -17,6 +17,7 @@ var Scene3D = (function () {
     var currentTheme = 'dark';
     var currentGridSize = 18;
     var sceneryGroup = null;  // 场景装饰物组
+    var starfieldGroup = null;  // 动态星星背景
     var CENTER_OFFSET = 8.5;
     var SNAKE_Y = 0.25, FOOD_Y = 0.4;
 
@@ -64,6 +65,7 @@ var Scene3D = (function () {
         scene.add(dirLight);
 
         rebuildFloorAndGrid(currentGridSize);
+        createStarfield();
         window.addEventListener('resize', onResize);
     }
 
@@ -200,6 +202,24 @@ var Scene3D = (function () {
             });
         }
         scene.add(sceneryGroup);
+    }
+
+    function createStarfield() {
+        if (starfieldGroup) scene.remove(starfieldGroup);
+        starfieldGroup = new THREE.Group();
+        var geo = new THREE.SphereGeometry(0.08, 3, 3);
+        var mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
+        for (var i = 0; i < 60; i++) {
+            var star = new THREE.Mesh(geo, mat.clone());
+            star.position.set(
+                (Math.random() - 0.5) * 40,
+                3 + Math.random() * 15,
+                (Math.random() - 0.5) * 40
+            );
+            star.userData = { speed: 0.005 + Math.random() * 0.02, baseY: star.position.y };
+            starfieldGroup.add(star);
+        }
+        scene.add(starfieldGroup);
     }
 
     function gameToWorld(gx, gz, y) {
@@ -383,6 +403,13 @@ var Scene3D = (function () {
                 m.rotation.z += 0.03; m.rotation.x += 0.02;
                 m.position.y = 0.4 + Math.sin(Date.now()*0.004 + m.position.x)*0.15;
             });
+            // 动态星星
+            if (starfieldGroup) {
+                starfieldGroup.children.forEach(function(s) {
+                    s.position.y = s.userData.baseY + Math.sin(Date.now()*0.001 + s.position.x)*2;
+                    s.material.opacity = 0.3 + 0.4 * Math.abs(Math.sin(Date.now()*0.002 + s.position.z));
+                });
+            }
             renderer.render(scene, camera);
         }
         animate();

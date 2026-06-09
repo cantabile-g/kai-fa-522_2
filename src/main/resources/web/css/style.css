@@ -271,21 +271,20 @@ html, body {
 /* === 道具提示 Toast === */
 .item-toast {
     position: fixed;
-    top: 50%;
+    top: 10%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     color: #ffffff;
-    padding: 12px 28px;
-    border-radius: 12px;
-    font-size: 20px;
+    padding: 6px 18px;
+    border-radius: 8px;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 1px;
     z-index: 30;
     pointer-events: none;
-    animation: toastFade 1.5s ease-out forwards;
+    animation: toastFade 1.2s ease-out forwards;
 }
 
 .item-toast.speed  { color: #00E5FF; }
@@ -294,11 +293,10 @@ html, body {
 .item-toast.double { color: #FFEA00; }
 
 @keyframes toastFade {
-    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
-    20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-    30%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    0%   { opacity: 0; transform: translateX(-50%) scale(0.8); }
+    20%  { opacity: 1; transform: translateX(-50%) scale(1); }
     80%  { opacity: 1; }
-    100% { opacity: 0; transform: translate(-50%, -50%) translateY(-20px); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
 }
 
 /* === 响应式 === */
